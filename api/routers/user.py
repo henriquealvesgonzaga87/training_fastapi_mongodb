@@ -39,6 +39,9 @@ async def update_user(id: str, user: UserSchema = Body(...)):
     Any missing or `null` fields will be ignored.
     """
 
+    hashed_password = hash(user.password)
+    user.password = hashed_password
+
     user = {k: v for k, v in user.model_dump(by_alias=True).items() if v is not None}
 
     if len(user) >= 1:
@@ -52,7 +55,7 @@ async def update_user(id: str, user: UserSchema = Body(...)):
         else:
             raise HTTPException(status_code=404, detail=f"User {id} not found")
 
-        # The update is empty, but we should still return the matching document:
+    # The update is empty, but we should still return the matching document:
     if (existing_user := user_collection.find_one({"_id":id})) is not None:
         return existing_user
     
@@ -78,9 +81,3 @@ async def list_all_users():
     List all users from the database
     """
     return UserCollectionResponse(users=user_collection.find())
-
-    # result = user_collection.find()
-    # if result is not None:
-    #     return result
-    # else:
-    #     raise HTTPException(status_code=404, detail="Users not found")
