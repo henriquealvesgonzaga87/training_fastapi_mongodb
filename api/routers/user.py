@@ -1,6 +1,6 @@
 from ..schema import UserSchema
 from ..database import client
-from ..schema import UserSchema, UserSchemaResponse
+from ..schema import UserSchema, UserSchemaResponse, UserCollectionResponse
 from ..utils import hash
 from fastapi import APIRouter, status, Body, HTTPException
 from bson import ObjectId
@@ -62,7 +62,7 @@ async def update_user(id: str, user: UserSchema = Body(...)):
 @router.get("/list_user/{id}", response_model=UserSchemaResponse, response_model_by_alias=False, status_code=status.HTTP_200_OK)
 async def list_one_user(id: str):
     """
-    List all of the users data in the database.
+    search for one user in the database by their id
     """
 
     result = user_collection.find_one({"_id": ObjectId(id)})
@@ -70,3 +70,17 @@ async def list_one_user(id: str):
         return result
     else:
         raise HTTPException(status_code=404, detail=f"User {id} not found")
+
+
+@router.get("/all_users/", response_model=UserCollectionResponse, response_model_by_alias=False, status_code=status.HTTP_200_OK)
+async def list_all_users():
+    """
+    List all users from the database
+    """
+    return UserCollectionResponse(users=user_collection.find())
+
+    # result = user_collection.find()
+    # if result is not None:
+    #     return result
+    # else:
+    #     raise HTTPException(status_code=404, detail="Users not found")
