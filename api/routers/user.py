@@ -3,6 +3,7 @@ from ..database import client
 from ..schema import UserSchema, UserSchemaResponse, UserCollectionResponse
 from ..utils import hash
 from fastapi import APIRouter, status, Body, HTTPException
+from fastapi.responses import Response
 from bson import ObjectId
 from pymongo import ReturnDocument
 
@@ -81,3 +82,14 @@ async def list_all_users():
     List all users from the database
     """
     return UserCollectionResponse(users=user_collection.find())
+
+
+@router.delete("/delete/{id}")
+async def delete_user(id: str):
+    
+    filter = user_collection.delete_one({"_id": ObjectId(id)})
+
+    if filter.deleted_count == 1:
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    
+    raise HTTPException(status_code=404, detail=f"User {id} not found!")
