@@ -57,3 +57,16 @@ async def update_user(id: str, user: UserSchema = Body(...)):
         return existing_user
     
     raise HTTPException(status_code=404, detail=f"User {id} not found")
+
+
+@router.get("/list_user/{id}", response_model=UserSchemaResponse, response_model_by_alias=False, status_code=status.HTTP_200_OK)
+async def list_one_user(id: str):
+    """
+    List all of the users data in the database.
+    """
+
+    result = user_collection.find_one({"_id": ObjectId(id)})
+    if result is not None:
+        return result
+    else:
+        raise HTTPException(status_code=404, detail=f"User {id} not found")
